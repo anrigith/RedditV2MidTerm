@@ -1,0 +1,35 @@
+name: Azure App Service Deployment
+
+on:
+  push:
+    branches:
+      - master  # Trigger this on push to master branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '5.0'  # Update to match your project's .NET version
+        
+      - name: Restore dependencies
+        run: dotnet restore Reddit.API/Reddit.csproj
+        
+      - name: Build
+        run: dotnet build Reddit.API/Reddit.csproj --configuration Release
+        
+      - name: Publish
+        run: dotnet publish Reddit.API/Reddit.csproj --configuration Release --output ./publish
+        
+      - name: Deploy to Azure App Service
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: <your-app-name>  # Replace with your Azure App Service name
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}  # Add publish profile as a secret in GitHub
+          package: ./publish
